@@ -1,14 +1,8 @@
-import MySQLdb
+from sqlalchemy import create_engine
 
 def get_pool(host:str,db:str,user:str,passwd:str):
-    db = MySQLdb.connect(host=host,    # your host, usually log                     
-                    user=user,         # your username
-                    passwd=passwd,  # your password
-                    db=db)        # name of the data base
-
-    # you must create a Cursor object. It will let
-    #  you execute all the queries you need
-    return db
+    engine = create_engine('mysql+mysqldb://'+user+':'+passwd+'@'+host+'/'+db,echo=True)
+    return engine
 
 
 def excuate_sql(db,sql):

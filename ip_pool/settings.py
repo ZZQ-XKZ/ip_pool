@@ -96,10 +96,13 @@ ROBOTSTXT_OBEY =False
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
-DOWNLOAD_TIMEOUT = 2
+DOWNLOAD_TIMEOUT = 10.0
 RETRY_TIMES = 2
 
-SPIDER_MIDDLEWARES = {
+
+
+
+R_MIDDLEWARES = {
     'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
     }
 
@@ -115,3 +118,5 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 SPLASH_URL = 'http://localhost:8050'
+
+

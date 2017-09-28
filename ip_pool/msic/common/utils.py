@@ -18,7 +18,10 @@ def get_uuid() -> str:
 
 # 2016-08-31T09:13:22.434Z
 def get_utc_time(offset:int=0) -> str:
-    return (datetime.datetime.utcnow()+datetime.timedelta(seconds=offset)).strftime("%Y-%m-%d %H:%M:%S")
+    return (datetime.datetime.now()+datetime.timedelta(seconds=offset)).strftime("%Y-%m-%d %H:%M:%S")
+
+def get_utc_date(offset:int=0) ->datetime:
+    return datetime.datetime.now()+datetime.timedelta(seconds=offset)
 
 def get_md5(content: str) -> str:
     md5 = hashlib.md5()

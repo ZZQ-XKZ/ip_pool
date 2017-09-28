@@ -6,7 +6,7 @@ from selenium.webdriver import DesiredCapabilities
 
 from msic.common import log, agents
 from msic.proxy.proxy_pool import proxy_pool
-
+import sys,traceback
 JAVASCRIPT = 'JAVASCRIPT'
 
 
@@ -22,7 +22,7 @@ class CatchExceptionMiddleware(object):
     def process_exception(self, request, exception, spider):
         #try:
             print("add_failed_time")
-            proxy_pool.add_failed_time(request.meta['proxy'].replace('http://', ''))
+            #proxy_pool.add_failed_time(request.meta['proxy'].replace('http://', ''))
         #except Exception:
         #    pass
 
@@ -30,8 +30,11 @@ class CatchExceptionMiddleware(object):
 class CustomHttpProxyMiddleware(object):
     def process_request(self, request, spider):
         try:
-            request.meta['proxy'] = "http://%s" % proxy_pool.random_choice_proxy()
-            print(request.meta)
+            traceback.print_stack()
+            print(request.url)
+            if request.url.find("localhost")==-1:
+                request.meta['proxy'] = "http://%s" % proxy_pool.random_choice_proxy(False)
+                print(request.meta)
         except Exception as e:
             log.error(e)
 
