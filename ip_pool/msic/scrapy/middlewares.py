@@ -7,34 +7,49 @@ from selenium.webdriver import DesiredCapabilities
 from msic.common import log, agents
 from msic.proxy.proxy_pool import proxy_pool
 import sys,traceback
+import json
 JAVASCRIPT = 'JAVASCRIPT'
 
 
 class CatchExceptionMiddleware(object):
     def process_response(self, request, response, spider):
+        print("CatchException:"+request.url+" "+str(response.status))
         if response.status < 200 or response.status >= 400:
             try:
-                proxy_pool.add_failed_time(request.meta['proxy'].replace('http://', ''))
+                if 'splash' not in request.meta:
+                    proxy_pool.add_failed_time(request.meta['proxy'].replace('http://', ''))
+                else:
+                    proxy_pool.add_failed_time(request.meta['splash']['args']['proxy'].replace('http://',''))
             except KeyError:
                 pass
+            except Exception as e:
+                log.error(e)
         return response
 
     def process_exception(self, request, exception, spider):
-        #try:
-            print("add_failed_time")
-            #proxy_pool.add_failed_time(request.meta['proxy'].replace('http://', ''))
-        #except Exception:
-        #    pass
+        try:
+            proxy_pool.add_failed_time(request.meta['proxy'].replace('http://', ''))
+        except Exception as e:
+            log.error(e)
+            pass
 
 
+class CustomSplashProxyMiddleware(object):
+    def process_request(self,request,spider):
+        try:
+            if 'splash' not in request.meta:
+                return
+            request.meta['splash']['args']['proxy'] = "http://%s" % proxy_pool.random_choice_proxy(False)
+            print("using proxy:"+request.meta['splash']['args']['proxy'])
+        except Exception as e:
+            log.error(e)
+            
 class CustomHttpProxyMiddleware(object):
     def process_request(self, request, spider):
         try:
-            traceback.print_stack()
-            print(request.url)
-            if request.url.find("localhost")==-1:
-                request.meta['proxy'] = "http://%s" % proxy_pool.random_choice_proxy(False)
-                print(request.meta)
+            if 'splash' in request.meta:
+                return
+            request.meta['proxy'] = "http://%s" % proxy_pool.random_choice_proxy(False)
         except Exception as e:
             log.error(e)
 

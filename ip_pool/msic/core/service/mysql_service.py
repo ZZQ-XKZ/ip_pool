@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 
 def get_pool(host:str,db:str,user:str,passwd:str):
+
     engine = create_engine('mysql+mysqldb://'+user+':'+passwd+'@'+host+'/'+db,echo=True)
     return engine
 

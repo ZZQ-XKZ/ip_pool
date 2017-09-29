@@ -32,13 +32,12 @@ class ProxyPool(object):
         return cls._instance
 
     def random_choice_proxy(self,bInternal) -> str:
-        print("random_choice_proxy")
         now_time = utils.get_utc_date()
         available_time = utils.get_utc_time(-60)
         if bInternal:
-            proxy = self.session.query(Proxy).filter(Proxy.last_use_time<available_time,Proxy.internal_validity==True).order_by(Proxy.internal_response_speed).first()
+            proxy = self.session.query(Proxy).filter(Proxy.last_use_time<available_time,Proxy.internal_validity==True,Proxy.internal_response_speed>0).order_by(Proxy.internal_response_speed).first()
         else:
-            proxy = self.session.query(Proxy).filter(Proxy.last_use_time<available_time,Proxy.external_validity==True).order_by(Proxy.external_response_speed).first()
+            proxy = self.session.query(Proxy).filter(Proxy.last_use_time<available_time,Proxy.external_validity==True,Proxy.external_response_speed>0).order_by(Proxy.external_response_speed).first()
         proxy.last_use_time= now_time
         proxy.used_count = proxy.used_count + 1
         self.calc_proxy_weight(proxy)
@@ -52,8 +51,10 @@ class ProxyPool(object):
             proxy.external_weight = (1+proxy.failed_count/proxy.used_count)*proxy.external_response_speed
 
     def add_failed_time(self,ip):
+        print("add_failed_time:"+ip)
         proxy = self.session.query(Proxy).filter(Proxy.ip==ip).first()
         if proxy == None:
+            print("can not find ip:"+ip)
             return
         proxy.failed_count = proxy.failed_count + 1
         self.calc_proxy_weight(proxy)

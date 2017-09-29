@@ -110,8 +110,9 @@ DUPEFILTER_CLASS = 'scrapy_splash.SplashAwareDupeFilter'
 HTTPCACHE_STORAGE = 'scrapy_splash.SplashAwareFSCacheStorage'
 
 DOWNLOADER_MIDDLEWARES = {
-    #'msic.scrapy.middlewares.CustomHttpProxyMiddleware': 1,
+    'msic.scrapy.middlewares.CustomHttpProxyMiddleware': 1,
     'msic.scrapy.middlewares.CustomUserAgentMiddleware': 2,
+    'msic.scrapy.middlewares.CustomSplashProxyMiddleware':3,
     'scrapy_splash.SplashCookiesMiddleware': 723,
     'scrapy_splash.SplashMiddleware': 725,
     'msic.scrapy.middlewares.CatchExceptionMiddleware':999,

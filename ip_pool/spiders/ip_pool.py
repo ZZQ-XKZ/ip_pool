@@ -15,13 +15,12 @@ class IPPoolSpider(scrapy.Spider):
     name ="ip_pool"
     start_urls =[
         'http://www.kuaidaili.com/proxylist/%d/' %i  for i in range(1,10)
-    ]
-    start_urls =[
+    ]+[
         'http://www.xicidaili.com/nn/',
         'https://free-proxy-list.net/',
     ]
     
-    start_urls = ['http://www.xicidaili.com/nn/']
+    #start_urls = ['http://www.xicidaili.com/nn/']
 
     def __init__(self,crawler):
         self.crawler = crawler
@@ -38,9 +37,7 @@ class IPPoolSpider(scrapy.Spider):
             elif url.find("us-proxy")!=-1:
                 yield SplashRequest(url, self.parse_free_proxy_list,endpoint = '/execute', method = 'GET',args={'wait': 0.5,'lua_source':free_proxy_list_lua_source()})
             elif url.find("xicidaili") !=-1:
-                proxy = "http://%s" % proxy_pool.random_choice_proxy(True)
-                print(proxy)
-                yield SplashRequest(url, self.parse_xicidaili,endpoint='/render.html',method='GET',args={'wait':0.5,'timeout':10,'proxy':proxy})
+                yield SplashRequest(url, self.parse_xicidaili,endpoint='/render.html',method='GET',args={'wait':0.5,'timeout':5})
             elif url.find("kuaidaili")!=-1:
                 yield SplashRequest(url, callback=self.parse_kuaidaili,endpoint='/execute',args={'wait':0.5,'lua_source':kuaidaili_lua_source()})
 
