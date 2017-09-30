@@ -8,7 +8,7 @@ from sqlalchemy import create_engine,or_
 from sqlalchemy.orm import sessionmaker
 from msic import config
 from msic.proxy.proxy import Proxy
-
+import concurrent.futures
 TASK_INTERVAL = 0
 FAILED_COUNT_BORDER = 3
 MIN_PROXY_COUNT = 10
@@ -90,7 +90,7 @@ class ProxyPool(object):
             exit()
         except:
             with lock:
-                proxy.external_validity = 0
+                proxy.external_validity = False
                 proxy.external_response_speed = -1
         
         start_time=time.time()
@@ -105,7 +105,7 @@ class ProxyPool(object):
             exit()
         except:
             with lock:
-                proxy.internal_validity = 0
+                proxy.internal_validity = False
                 proxy.internal_response_speed = -1
         with lock:
             utils.log('Check IP:'+ip+' finished i:'+str(proxy.internal_validity)+' e:'+str(proxy.external_validity))
@@ -113,26 +113,28 @@ class ProxyPool(object):
             self.session.commit()
             
     def _check_ip_availability_task(self,proxy_list):
-        for proxy in proxy_list:
-            ta=threading.Thread(target=self._thread_check_ip,args=(proxy,))
-            ta.start()
-
-
+        with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+            future_to_proxy = {executor.submit(self._thread_check_ip,proxy):proxy for proxy in proxy_list}
+            for rt in concurrent.futures.as_completed(future_to_proxy):
+                print("thread complete")
+                
     def check_ip_availability_by_range(self,begin,end):
         proxy_list=self.session.query(Proxy)[begin:end]
         self._check_ip_availability_task(proxy_list)
             
-    def check_ip_availability_task(self):
-        need_update_date=utils.get_utc_date(-60*60)
-        utils.log(need_update_date.strftime("%Y-%m-%d %H:%M:%S"))
-        ##proxy_list=self.session.query(Proxy).filter(Proxy.last_use_time<need_update_date).all()
-        proxy_list = [self.random_choice_proxy(True),]
+    def check_ip_availability_task(self,time):
+        need_update_date=utils.get_utc_date(-time)
+        proxy_list=self.session.query(Proxy).filter(Proxy.last_use_time<need_update_date).all()
         utils.log('Start check count:'+str(len(proxy_list)))
         self._check_ip_availability_task(proxy_list)
         
     def check_all_ip_availability_task(self):
         count = self.get_ip_count()
         self.check_ip_availability_by_range(0,count)
+
+    def check_new_ip_availability_task(self):
+        proxy_list = self.session.query(Proxy).filter(Proxy.internal_validity==True,Proxy.internal_response_speed==-1,Proxy.external_validity==True,Proxy.external_response_speed==-1).all()
+        self._check_ip_availability_task(proxy_list)
         
     def get_ip_count(self):
         return self.session.query(Proxy).count();

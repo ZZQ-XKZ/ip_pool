@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser(description='Process some integers.')
 
 parser.add_argument('--begin')
 parser.add_argument('--end')
+parser.add_argument('--new',action="store_true")
 parser.add_argument('--count',action="store_true")
 args = parser.parse_args()
 
@@ -14,6 +15,10 @@ if args.count ==True:
     print(proxy_pool.get_ip_count())
     exit()
 
+if args.new == True:
+    proxy_pool.check_new_ip_availability_task()
+
+    
 if args.begin != None and args.end != None:
     count = proxy_pool.get_ip_count()
     begin = min(max(0,int(args.begin)),int(args.end)-1,int(count)-2)

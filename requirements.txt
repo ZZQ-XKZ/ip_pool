@@ -1,0 +1,7 @@
+scrapy
+scrapy-splash
+schedule
+requests
+sqlalchemy
+mysqlclient
+selenium

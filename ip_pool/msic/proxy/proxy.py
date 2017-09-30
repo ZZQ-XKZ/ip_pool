@@ -1,10 +1,15 @@
 from msic.common import utils
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column,Integer,String,DateTime,Boolean,Float
-
+import re
 Base=declarative_base()
 
-
+def check_ip_validity(ip):
+    aa=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$",ip)
+    if aa:
+        return True
+    else:
+        return false
 class Proxy(Base):
     __tablename__='proxy'
     ip = Column(String(25),primary_key=True)
@@ -20,9 +25,11 @@ class Proxy(Base):
     external_weight=Column(Float)
     internal_validity=Column(Boolean)
     external_validity=Column(Boolean)
-
+    
     @staticmethod
     def create(ip, origin):
+        if check_ip_validity(ip) == False:
+            return None
         proxy = Proxy()
         proxy.ip = ip
         proxy.origin = origin
